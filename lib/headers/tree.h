@@ -14,8 +14,6 @@ public:
 
     explicit Tree(std::vector<ull> &counts);
 
-    std::vector<std::pair<unsigned char, ull>> getCodes() const;
-
     void initCur();
 
     bool go(bool x);
@@ -29,9 +27,8 @@ public:
 private:
     struct Node;
 
-    std::shared_ptr<Node> root, curNode;
-
-    void dfs(std::shared_ptr<Node> R, std::vector<std::pair<unsigned char, ull>> &res, ull curCode, unsigned char len) const;
+    std::shared_ptr<Node> root;
+    Node *curNode{};
 };
 
 #endif //LIB_TREE_H

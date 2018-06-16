@@ -39,7 +39,7 @@ TEST(correctness, all_chars) {
     std::stringstream dec;
 
     for (auto i = -128; i <= 127; ++i) {
-        in << (char)i;
+        in << (char) i;
     }
 
     Huffman::compress(in, comp);
@@ -91,7 +91,7 @@ TEST(correctness, two_chars) {
     std::stringstream comp;
     std::stringstream dec;
 
-    char a[2] = { 'a', 'b' };
+    char a[2] = {'a', 'b'};
     for (auto i = 0; i < 1024 * 1024; ++i) {
         in << a[rand() % 2];
     }

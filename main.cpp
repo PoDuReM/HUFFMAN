@@ -7,7 +7,7 @@ void printUsage() {
     exit(0);
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     if (argc != 4) {
         printUsage();
     }

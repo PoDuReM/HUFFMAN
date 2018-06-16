@@ -1,61 +1,59 @@
 #include <queue>
 #include <utility>
+#include <algorithm>
 #include "headers/tree.h"
 
 struct Tree::Node {
     unsigned char letter{};
-    std::shared_ptr<Node> L, R;
+    std::shared_ptr<Node> children[2];
 
     Node() = default;
 
-    explicit Node(unsigned char _letter, std::shared_ptr<Node>_L = nullptr, std::shared_ptr<Node>_R = nullptr) :
-            letter(_letter), L(std::move(_L)), R(std::move(_R)) {}
+    explicit Node(unsigned char _letter, std::shared_ptr<Node> _L = nullptr, std::shared_ptr<Node> _R = nullptr) :
+            letter(_letter), children{std::move(_L), std::move(_R)} {}
 };
 
-std::vector<std::pair<unsigned char, Tree::ull>> Tree::getCodes() const {
-    std::vector<std::pair<unsigned char, ull>> res(256, { 0, 0 });
-    dfs(root, res, 0, 0);
-    return res;
-}
-
 Tree::Tree(std::vector<ull> &counts) {
-    class cmp {
-    public:
-        bool operator() (std::pair<ull, std::shared_ptr<Node>> a, std::pair<ull, std::shared_ptr<Node>> b) {
-            return a.first > b.first;
+    auto *curNodes = new std::pair<ull, std::shared_ptr<Node>>[257];
+    auto *addNodes = new std::pair<ull, std::shared_ptr<Node>>[256];
+    size_t iC = 0, iA = 0, cC = 0, cA = 0;
+    addNodes[iA] = {(ull) -1, nullptr};
+    curNodes[iC++] = {counts[0], std::make_shared<Node>(0)};
+    curNodes[iC++] = {counts[1], std::make_shared<Node>(1)};
+    for (unsigned char i = 2; i > 0; ++i) {
+        if (counts[i]) {
+            curNodes[iC++] = {counts[i], std::make_shared<Node>(i)};
         }
+    }
+    std::sort(curNodes, curNodes + iC, [](auto a, auto b) {
+        return a.first == b.first ? a.second->letter < b.second->letter : a.first < b.first;
+    });
+    curNodes[iC] = {(ull) -1, nullptr};
+    auto getMin = [&cA, &cC, &iA, &curNodes, &addNodes]() {
+        return curNodes[cC].first == addNodes[cA].first ?
+               curNodes[cC].second->letter < addNodes[cA].second->letter ? curNodes[cC++] : addNodes[cA++]
+               : curNodes[cC].first < addNodes[cA].first ? curNodes[cC++] : addNodes[cA++];
     };
-    std::priority_queue<std::pair<ull, std::shared_ptr<Node>>, 
-            std::vector<std::pair<ull, std::shared_ptr<Node>>>, cmp> curNodes;
-    curNodes.push({ counts[0], std::make_shared<Node>((unsigned char)0) });
-    curNodes.push({ counts[1], std::make_shared<Node>((unsigned char)1) });
-    for (unsigned char i = 2; i > 0; ++i) if (counts[i]) {
-        curNodes.push({ counts[i], std::make_shared<Node>(i) });
+    while (iC - cC + iA - cA > 1) {
+        auto X = getMin();
+        auto Y = getMin();
+        addNodes[iA++] = {X.first + Y.first, std::make_shared<Node>(X.second->letter, X.second, Y.second)};
+        addNodes[iA] = {(ull) -1, nullptr};
     }
-    while (curNodes.size() > 1) {
-        auto X = curNodes.top();
-        curNodes.pop();
-        auto Y = curNodes.top();
-        curNodes.pop();
-        curNodes.push({ X.first + Y.first, std::make_shared<Node>('-', X.second, Y.second) });
-    }
-    root = curNodes.top().second;
-    curNodes.pop();
+    root = cA < iA ? addNodes[cA].second : curNodes[cC].second;
+    delete[] curNodes;
+    delete[] addNodes;
 }
 
 void Tree::initCur() {
-    curNode = root;
+    curNode = root.get();
 }
 
 bool Tree::go(bool x) {
-    if (curNode->L == nullptr) {
+    if (curNode->children[0] == nullptr) {
         return false;
     }
-    if (x) {
-        curNode = curNode->R;
-    } else {
-        curNode = curNode->L;
-    }
+    curNode = curNode->children[x].get();
     return true;
 }
 
@@ -64,19 +62,9 @@ unsigned char Tree::getChar() const {
 }
 
 bool Tree::isTerm() const {
-    return curNode->L == nullptr;
-}
-
-void Tree::dfs(std::shared_ptr<Node>R, std::vector<std::pair<unsigned char, ull>> &res, ull curCode, unsigned char len) const {
-    if (R->L == nullptr) {
-        res[R->letter] = { len, curCode };
-        return void();
-    }
-    dfs(R->L, res, curCode, (unsigned char)(len + 1));
-    curCode |= ((ull)1 << len);
-    dfs(R->R, res, curCode, (unsigned char)(len + 1));
+    return curNode->children[0] == nullptr;
 }
 
 bool Tree::checkEnd() const {
-    return curNode == root;
+    return curNode == root.get();
 }

@@ -3,10 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <cstring>
-
-size_t min(size_t a, size_t b) {
-    return a < b ? a : b;
-}
+#include <queue>
 
 void Huffman::compress(std::istream &in, std::ostream &out) {
     in.seekg(0, std::istream::end);
@@ -18,14 +15,13 @@ void Huffman::compress(std::istream &in, std::ostream &out) {
     std::vector<ull> counts(256, 0);
     unsigned char x = 0;
     while (cur) {
-        size_t auxSize = min(buff_size, cur);
+        size_t auxSize = std::min(buff_size, cur);
         cur -= auxSize;
         in.read((char *) buff, auxSize);
         for (size_t i = 0; i < auxSize; ++i) {
             ++counts[buff[i]];
         }
     }
-    Tree huffTree(counts);
 
     unsigned char outBuff[buff_size];
     size_t curOut = 0;
@@ -55,14 +51,14 @@ void Huffman::compress(std::istream &in, std::ostream &out) {
             writer(counts[i]);
         }
 
-    std::vector<std::pair<unsigned char, ull>> codes = huffTree.getCodes();
+    std::vector<std::pair<unsigned char, ull>> codes = getCodes(counts);
     in.seekg(std::istream::beg);
 
     unsigned char curCntBit = 0;
     ull curBit = 0;
     cur = len;
     while (cur) {
-        size_t auxSize = min(buff_size, cur);
+        size_t auxSize = std::min(buff_size, cur);
         cur -= auxSize;
         in.read((char *) buff, auxSize);
         for (size_t i = 0; i < auxSize; ++i) {
@@ -136,7 +132,7 @@ bool Huffman::decompress(std::istream &in, std::ostream &out) {
     Tree huffTree(counts);
     huffTree.initCur();
     while (cur) {
-        size_t auxSize = min(buff_size, cur);
+        size_t auxSize = std::min(buff_size, cur);
         cur -= auxSize;
         in.read((char *) buff, auxSize);
         for (size_t j = 0; j < auxSize; j += 8) {
@@ -164,6 +160,45 @@ bool Huffman::decompress(std::istream &in, std::ostream &out) {
         out.write((char *) outBuff, curOut);
     }
     return huffTree.checkEnd();
+}
+
+std::vector<std::pair<unsigned char, Huffman::ull>> Huffman::getCodes(std::vector<ull> &counts) {
+    std::vector<std::pair<unsigned char, ull>> res(256, {0, 0});
+    auto *curNodes = new std::pair<ull, std::vector<unsigned char>>[257];
+    auto *addNodes = new std::pair<ull, std::vector<unsigned char>>[256];
+    size_t iC = 0, iA = 0, cC = 0, cA = 0;
+    addNodes[iA] = {(ull) -1, {}};
+    curNodes[iC++] = {counts[0], {0}};
+    curNodes[iC++] = {counts[1], {1}};
+    for (unsigned char i = 2; i > 0; ++i) {
+        if (counts[i]) {
+            curNodes[iC++] = {counts[i], {i}};
+        }
+    }
+    std::sort(curNodes, curNodes + iC);
+    curNodes[iC] = {(ull) -1, {}};
+    auto getMin = [&cA, &cC, &curNodes, &addNodes]() {
+        return curNodes[cC] < addNodes[cA] ? curNodes[cC++] : addNodes[cA++];
+    };
+    while (iC - cC + iA - cA > 1) {
+        auto X = getMin();
+        auto Y = getMin();
+        for (auto c : X.second) {
+            res[c].first++;
+            res[c].second <<= 1;
+        }
+        for (auto c : Y.second) {
+            res[c].first++;
+            (res[c].second <<= 1)++;
+        }
+        std::vector<unsigned char> aux(X.second.size() + Y.second.size());
+        X.second.insert(X.second.end(), Y.second.begin(), Y.second.end());
+        addNodes[iA++] = {X.first + Y.first, X.second};
+        addNodes[iA] = {(ull) -1, {}};
+    }
+    delete[] curNodes;
+    delete[] addNodes;
+    return res;
 }
 
 /*

@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(SOURCES huffman.cpp
         tree.cpp)
 
-set(TEST	tests/huffman_testing.cpp
+set(TEST tests/huffman_testing.cpp
         tests/gtest/gtest-all.cc
         tests/gtest/gtest.h
         tests/gtest/gtest_main.cc)
@@ -16,9 +16,9 @@ set(HEADERS headers/tree.h
 
 add_library(lib ${SOURCES} ${HEADERS})
 
-install (TARGETS lib DESTINATION lib)
+install(TARGETS lib DESTINATION lib)
 
-install (FILES ${HEADERS} DESTINATION include/lib)
+install(FILES ${HEADERS} DESTINATION include/lib)
 
 add_executable(testing ${SOURCES} ${HEADERS} ${TEST})
 
