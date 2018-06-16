@@ -1,7 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include <time.h>
-
 #include "lib/headers/huffman.h"
 
 void printUsage() {

@@ -9,7 +9,7 @@ size_t min(size_t a, size_t b) {
 }
 
 void Huffman::compress(std::istream &in, std::ostream &out) {
-    in.seekg(0, in.end);
+    in.seekg(0, std::istream::end);
     auto len = (size_t)in.tellg(), cur = len;
     in.seekg(std::istream::beg);
     const size_t buff_size = 2048;
@@ -86,7 +86,7 @@ void Huffman::compress(std::istream &in, std::ostream &out) {
 }
 
 bool Huffman::decompress(std::istream &in, std::ostream &out) {
-    in.seekg(0, in.end);
+    in.seekg(0, std::istream::end);
     auto cur = (size_t)in.tellg();
     in.seekg(std::istream::beg);
     unsigned char countInvalid = 0;
