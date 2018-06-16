@@ -38,7 +38,7 @@ TEST(correctness, all_chars) {
     std::stringstream comp;
     std::stringstream dec;
 
-    for (auto i = CHAR_MIN; i <= CHAR_MAX; ++i) {
+    for (auto i = -128; i <= 127; ++i) {
         in << (char)i;
     }
 
