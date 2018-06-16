@@ -55,10 +55,11 @@ void Huffman::compress(std::istream &in, std::ostream &out) {
             writer(counts[i]);
         }
 
-    std::vector<std::pair<unsigned char, unsigned char>> codes = huffTree.getCodes();
+    std::vector<std::pair<unsigned char, ull>> codes = huffTree.getCodes();
     in.seekg(std::istream::beg);
 
-    unsigned char curBit = 0, curCntBit = 0;
+    unsigned char curCntBit = 0;
+    ull curBit = 0;
     cur = len;
     while (cur) {
         size_t auxSize = min(buff_size, cur);
@@ -67,16 +68,16 @@ void Huffman::compress(std::istream &in, std::ostream &out) {
         for (size_t i = 0; i < auxSize; ++i) {
             curBit |= codes[buff[i]].second << curCntBit;
             curCntBit += codes[buff[i]].first;
-            if (curCntBit >= 8) {
+            if (curCntBit >= 64) {
                 writer(curBit);
-                curCntBit -= 8;
+                curCntBit -= 64;
                 curBit = codes[buff[i]].second >> (codes[buff[i]].first - curCntBit);
             }
         }
     }
 
     if (curCntBit) {
-        curCntBit = (unsigned char) (8 - curCntBit);
+        curCntBit = (unsigned char) (64 - curCntBit);
         writer(curBit);
     }
 
@@ -124,7 +125,7 @@ bool Huffman::decompress(std::istream &in, std::ostream &out) {
     unsigned char outBuff[buff_size];
     size_t curOut = 0;
     auto writer = [&curOut, &outBuff, &buff_size, &out](auto x) {
-        if (curOut + (sizeof x) >= buff_size) {
+        if (curOut + sizeof x >= buff_size) {
             out.write((char *) outBuff, curOut);
             curOut = 0;
         }
@@ -138,9 +139,13 @@ bool Huffman::decompress(std::istream &in, std::ostream &out) {
         size_t auxSize = min(buff_size, cur);
         cur -= auxSize;
         in.read((char *) buff, auxSize);
-        for (size_t j = 0; j < auxSize; ++j) {
-            unsigned char x = buff[j], cntBits = 8;
-            if (!cur && j == auxSize - 1) {
+        for (size_t j = 0; j < auxSize; j += 8) {
+            ull x, cntBits = 64;
+            if (j + 8 > auxSize) {
+                return false;
+            }
+            memcpy(&x, buff + j, sizeof x);
+            if (!cur && j + 8 == auxSize) {
                 cntBits -= countInvalid;
             }
             for (unsigned char i = 0; i < cntBits; ++i) {

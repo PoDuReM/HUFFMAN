@@ -11,8 +11,8 @@ struct Tree::Node {
             letter(_letter), L(_L), R(_R) {}
 };
 
-std::vector<std::pair<unsigned char, unsigned char>> Tree::getCodes() const {
-    std::vector<std::pair<unsigned char, unsigned char>> res(256, { 0, 0 });
+std::vector<std::pair<unsigned char, Tree::ull>> Tree::getCodes() const {
+    std::vector<std::pair<unsigned char, ull>> res(256, { 0, 0 });
     dfs(root, res, 0, 0);
     return res;
 }
@@ -77,15 +77,14 @@ bool Tree::isTerm() const {
     return curNode->L == nullptr;
 }
 
-void Tree::dfs(Tree::Node *R, std::vector<std::pair<unsigned char, unsigned char>> &res, unsigned char curCode, unsigned char len) const {
+void Tree::dfs(Tree::Node *R, std::vector<std::pair<unsigned char, ull>> &res, ull curCode, unsigned char len) const {
     if (R->L == nullptr) {
         res[R->letter] = { len, curCode };
         return void();
     }
     dfs(R->L, res, curCode, (unsigned char)(len + 1));
-    curCode ^= (1 << len);
+    curCode |= ((ull)1 << len);
     dfs(R->R, res, curCode, (unsigned char)(len + 1));
-    curCode >>= 1;
 }
 
 bool Tree::checkEnd() const {
