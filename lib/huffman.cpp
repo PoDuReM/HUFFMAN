@@ -30,7 +30,7 @@ void Huffman::compress(std::istream &in, std::ostream &out) {
     unsigned char outBuff[buff_size];
     size_t curOut = 0;
     auto writer = [&curOut, &outBuff, &buff_size, &out](auto x) {
-        if (curOut + (sizeof x) >= buff_size) {
+        if (curOut + sizeof x >= buff_size) {
             out.write((char*)outBuff, curOut);
             curOut = 0;
         }

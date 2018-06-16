@@ -5,7 +5,7 @@
 #include "lib/headers/huffman.h"
 
 void printUsage() {
-    std::cout << "usage: ./huffman ⟨-c | -d⟩ source target" << std::endl;
+    std::cout << "usage: ./huffman <-c | -d> source target" << std::endl;
     exit(0);
 }
 
