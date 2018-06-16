@@ -15,7 +15,7 @@ public:
 
     ~Tree();
 
-    std::vector<std::vector<bool>> getCodes() const;
+    std::vector<std::pair<unsigned char, unsigned char>> getCodes() const;
 
     void initCur();
 
@@ -34,7 +34,7 @@ private:
 
     void myDelete(Node *R);
 
-    void dfs(Node *R, std::vector<std::vector<bool>> &res, std::vector<bool> &curCode) const;
+    void dfs(Node *R, std::vector<std::pair<unsigned char, unsigned char>> &res, unsigned char curCode, unsigned char len) const;
 };
 
 #endif //LIB_TREE_H
